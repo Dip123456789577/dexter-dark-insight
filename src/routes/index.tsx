@@ -367,6 +367,9 @@ function CursorGlow() {
 /* ------------------------------------------------------------------ */
 
 function Particles({ count = 40 }: { count?: number }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
   const items = Array.from({ length: count }, (_, i) => i);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -394,6 +397,7 @@ function Particles({ count = 40 }: { count?: number }) {
     </div>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Nav                                                                 */

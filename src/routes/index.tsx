@@ -494,6 +494,29 @@ function Hero() {
     return () => clearInterval(id);
   }, []);
 
+  // typing effect for tagline
+  const [typedText, setTypedText] = useState("");
+  const [showCursor, setShowCursor] = useState(true);
+  const tagline = "Dark · Calculated · Unforgettable";
+  
+  useEffect(() => {
+    let i = 0;
+    const type = () => {
+      if (i < tagline.length) {
+        setTypedText(tagline.slice(0, i + 1));
+        i++;
+        setTimeout(type, 50 + Math.random() * 50);
+      }
+    };
+    const timer = setTimeout(type, 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const cursor = setInterval(() => setShowCursor((prev) => !prev), 500);
+    return () => clearInterval(cursor);
+  }, []);
+
   const onMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     mx.set((e.clientX - rect.left) / rect.width - 0.5);
@@ -502,6 +525,27 @@ function Hero() {
   const onMouseLeave = () => {
     mx.set(0);
     my.set(0);
+  };
+
+  // magnetic button effect
+  const magneticBtn = useRef<HTMLAnchorElement>(null);
+  const magneticX = useMotionValue(0);
+  const magneticY = useMotionValue(0);
+  const magneticSpringX = useSpring(magneticX, { stiffness: 150, damping: 15 });
+  const magneticSpringY = useSpring(magneticY, { stiffness: 150, damping: 15 });
+
+  const handleMagneticMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!magneticBtn.current) return;
+    const rect = magneticBtn.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    magneticX.set(e.clientX - centerX);
+    magneticY.set(e.clientY - centerY);
+  };
+
+  const handleMagneticLeave = () => {
+    magneticX.set(0);
+    magneticY.set(0);
   };
 
   return (
@@ -559,6 +603,20 @@ function Hero() {
         style={{ y, opacity }}
         className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 text-center"
       >
+        {/* subtle glow effect behind content */}
+        <motion.div
+          animate={{
+            opacity: [0.3, 0.5, 0.3],
+            scale: [1, 1.05, 1],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute inset-0 -z-10 bg-gradient-radial from-primary/10 via-transparent to-transparent"
+        />
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -577,7 +635,7 @@ function Hero() {
               initial={{ opacity: 0, y: 80, filter: "blur(20px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ delay: 0.4 + i * 0.06, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ y: -8, color: "oklch(0.65 0.20 25)" }}
+              whileHover={{ y: -8, color: "oklch(0.65 0.20 25)", scale: 1.05 }}
               className="inline-block cursor-default"
             >
               {c}
@@ -586,12 +644,17 @@ function Hero() {
         </motion.h1>
 
         <motion.p
-          initial={{ opacity: 0, letterSpacing: "0.5em" }}
-          animate={{ opacity: 1, letterSpacing: "0.32em" }}
-          transition={{ delay: 1.1, duration: 1.4 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.8 }}
           className="mt-4 font-display text-xs font-semibold uppercase text-on-surface sm:text-sm md:text-xl"
         >
-          Dark · Calculated · Unforgettable
+          {typedText}
+          <motion.span
+            animate={{ opacity: showCursor ? 1 : 0 }}
+            transition={{ duration: 0.1 }}
+            className="inline-block w-0.5 h-current bg-primary ml-1"
+          />
         </motion.p>
 
         <motion.div
@@ -601,10 +664,15 @@ function Hero() {
           className="mt-8 flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 font-mono text-[9px] uppercase tracking-[0.3em] text-on-surface-variant sm:text-[10px]"
         >
           {["Crime Drama", "2006 – 2021", "8 Seasons + New Blood", "55 min", "TV-MA"].map((t, i, arr) => (
-            <span key={t} className="flex items-center gap-3">
+            <motion.span
+              key={t}
+              whileHover={{ color: "oklch(0.78 0.13 25)", scale: 1.1 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-3 cursor-default"
+            >
               <span>{t}</span>
               {i < arr.length - 1 && <span className="h-1 w-1 rounded-full bg-primary/40" />}
-            </span>
+            </motion.span>
           ))}
         </motion.div>
 
@@ -614,20 +682,36 @@ function Hero() {
           transition={{ delay: 1.7, duration: 0.6 }}
           className="mt-10 flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row"
         >
-          <a
+          <motion.a
+            ref={magneticBtn}
             href="#trailer"
+            onMouseMove={handleMagneticMove}
+            onMouseLeave={handleMagneticLeave}
+            style={{ x: magneticSpringX, y: magneticSpringY }}
             className="group relative flex w-full items-center justify-center gap-3 overflow-hidden bg-crimson px-10 py-4 font-mono text-[11px] uppercase tracking-[0.28em] text-white transition-all hover:bg-primary-glow crimson-glow sm:w-auto"
           >
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-primary-glow via-primary to-crimson transition-transform duration-500 group-hover:translate-x-0" />
-            <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="relative z-10"><polygon points="0,0 12,7 0,14" /></svg>
+            <motion.svg 
+              width="12" 
+              height="14" 
+              viewBox="0 0 12 14" 
+              fill="currentColor" 
+              className="relative z-10"
+              animate={{ x: [0, 2, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <polygon points="0,0 12,7 0,14" />
+            </motion.svg>
             <span className="relative z-10">Watch Trailer</span>
-          </a>
-          <a
+          </motion.a>
+          <motion.a
             href="#cast"
+            whileHover={{ scale: 1.05, borderColor: "oklch(0.78 0.13 25 / 0.4)" }}
+            whileTap={{ scale: 0.98 }}
             className="glass-panel w-full px-10 py-4 text-center font-mono text-[11px] uppercase tracking-[0.28em] text-on-surface transition-all hover:border-primary/40 hover:text-primary sm:w-auto"
           >
             Explore Characters
-          </a>
+          </motion.a>
         </motion.div>
       </motion.div>
 

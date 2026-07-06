@@ -367,6 +367,9 @@ function CursorGlow() {
 /* ------------------------------------------------------------------ */
 
 function Particles({ count = 40 }: { count?: number }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
   const items = Array.from({ length: count }, (_, i) => i);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -394,6 +397,7 @@ function Particles({ count = 40 }: { count?: number }) {
     </div>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Nav                                                                 */
@@ -461,32 +465,99 @@ function Hero() {
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
+  // mouse parallax
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const smx = useSpring(mx, { stiffness: 60, damping: 20 });
+  const smy = useSpring(my, { stiffness: 60, damping: 20 });
+  const bgX = useTransform(smx, (v) => v * -20);
+  const bgY = useTransform(smy, (v) => v * -20);
+  const titleRotY = useTransform(smx, (v) => v * 6);
+  const titleRotX = useTransform(smy, (v) => v * -4);
+  const glowX = useTransform(smx, (v) => `${50 + v * 20}%`);
+  const glowY = useTransform(smy, (v) => `${70 + v * 15}%`);
+  const glowBg = useTransform(
+    [glowX, glowY] as const,
+    ([gx, gy]) => `radial-gradient(circle at ${gx} ${gy}, oklch(0.42 0.19 27 / 0.5), transparent 55%)`
+  );
+
+  // live "vitals" ticker
+  const [ts, setTs] = useState<string>("--:--:--");
+  useEffect(() => {
+    const tick = () => {
+      const d = new Date();
+      const pad = (n: number) => String(n).padStart(2, "0");
+      setTs(`${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const onMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mx.set((e.clientX - rect.left) / rect.width - 0.5);
+    my.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+  const onMouseLeave = () => {
+    mx.set(0);
+    my.set(0);
+  };
+
   return (
-    <section id="top" ref={ref} className="relative h-screen w-full overflow-hidden">
-      {/* Background image with slow zoom */}
-      <motion.div
-        className="absolute inset-0"
-        style={{ scale }}
-      >
+    <section
+      id="top"
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      className="relative min-h-screen w-full overflow-hidden [perspective:1400px]"
+    >
+      {/* Background image with slow zoom + mouse parallax */}
+      <motion.div className="absolute inset-0" style={{ scale, x: bgX, y: bgY }}>
         <img
           src={miamiNight}
           alt=""
           width={1920}
           height={1080}
-          className="h-full w-full object-cover opacity-70"
+          className="h-full w-full scale-110 object-cover opacity-70"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/50 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_70%,oklch(0.42_0.19_27/0.35),transparent_60%)]" />
+        <motion.div className="absolute inset-0" style={{ background: glowBg }} />
       </motion.div>
 
+      {/* Diagonal grid overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.07] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "linear-gradient(oklch(0.78 0.13 25) 1px, transparent 1px), linear-gradient(90deg, oklch(0.78 0.13 25) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+        }}
+      />
+
       <Particles count={50} />
+
+      {/* Side rail — left */}
+      <div className="pointer-events-none absolute left-4 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-6 font-mono text-[10px] uppercase tracking-[0.3em] text-primary/60 md:flex">
+        <div className="rotate-180 [writing-mode:vertical-rl]">MIAMI · METRO · HOMICIDE</div>
+      </div>
+      {/* Side rail — right (live vitals) */}
+      <div className="pointer-events-none absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 flex-col items-end gap-3 font-mono text-[10px] uppercase tracking-[0.28em] text-primary/70 md:flex">
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 animate-ping rounded-full bg-primary" />
+          <span>REC · LIVE</span>
+        </div>
+        <div>UTC {ts}</div>
+        <div>25.7617° N</div>
+        <div>80.1918° W</div>
+      </div>
 
       {/* fog layer */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
 
       <motion.div
         style={{ y, opacity }}
-        className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
+        className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 text-center"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -496,25 +567,29 @@ function Hero() {
           <SectionTag>Case File #0821 · Miami Metro</SectionTag>
         </motion.div>
 
-        <h1 className="mt-6 font-display text-[22vw] font-black leading-[0.85] tracking-[-0.04em] text-primary text-glow md:text-[13rem] lg:text-[15rem]">
+        <motion.h1
+          style={{ rotateX: titleRotX, rotateY: titleRotY, transformStyle: "preserve-3d" }}
+          className="mt-6 font-display text-[20vw] font-black leading-[0.85] tracking-[-0.04em] text-primary text-glow will-change-transform sm:text-[18vw] md:text-[13rem] lg:text-[15rem]"
+        >
           {"DEXTER".split("").map((c, i) => (
             <motion.span
               key={i}
               initial={{ opacity: 0, y: 80, filter: "blur(20px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ delay: 0.4 + i * 0.06, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-              className="inline-block"
+              whileHover={{ y: -8, color: "oklch(0.65 0.20 25)" }}
+              className="inline-block cursor-default"
             >
               {c}
             </motion.span>
           ))}
-        </h1>
+        </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, letterSpacing: "0.5em" }}
           animate={{ opacity: 1, letterSpacing: "0.32em" }}
           transition={{ delay: 1.1, duration: 1.4 }}
-          className="mt-4 font-display text-sm font-semibold uppercase text-on-surface md:text-xl"
+          className="mt-4 font-display text-xs font-semibold uppercase text-on-surface sm:text-sm md:text-xl"
         >
           Dark · Calculated · Unforgettable
         </motion.p>
@@ -523,7 +598,7 @@ function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 0.6 }}
-          className="mt-8 flex flex-wrap items-center justify-center gap-3 font-mono text-[10px] uppercase tracking-[0.3em] text-on-surface-variant"
+          className="mt-8 flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 font-mono text-[9px] uppercase tracking-[0.3em] text-on-surface-variant sm:text-[10px]"
         >
           {["Crime Drama", "2006 – 2021", "8 Seasons + New Blood", "55 min", "TV-MA"].map((t, i, arr) => (
             <span key={t} className="flex items-center gap-3">
@@ -537,18 +612,19 @@ function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.7, duration: 0.6 }}
-          className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
+          className="mt-10 flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row"
         >
           <a
             href="#trailer"
-            className="group relative flex items-center gap-3 bg-crimson px-10 py-4 font-mono text-[11px] uppercase tracking-[0.28em] text-white transition-all hover:bg-primary-glow crimson-glow"
+            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden bg-crimson px-10 py-4 font-mono text-[11px] uppercase tracking-[0.28em] text-white transition-all hover:bg-primary-glow crimson-glow sm:w-auto"
           >
-            <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor"><polygon points="0,0 12,7 0,14" /></svg>
-            Watch Trailer
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-primary-glow via-primary to-crimson transition-transform duration-500 group-hover:translate-x-0" />
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" className="relative z-10"><polygon points="0,0 12,7 0,14" /></svg>
+            <span className="relative z-10">Watch Trailer</span>
           </a>
           <a
             href="#cast"
-            className="glass-panel px-10 py-4 font-mono text-[11px] uppercase tracking-[0.28em] text-on-surface transition-all hover:border-primary/40"
+            className="glass-panel w-full px-10 py-4 text-center font-mono text-[11px] uppercase tracking-[0.28em] text-on-surface transition-all hover:border-primary/40 hover:text-primary sm:w-auto"
           >
             Explore Characters
           </a>
@@ -556,20 +632,22 @@ function Hero() {
       </motion.div>
 
       {/* scroll indicator */}
-      <motion.div
+      <motion.a
+        href="#story"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2.2 }}
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.4em] text-primary/70"
+        animate={{ opacity: 1, y: [0, 8, 0] }}
+        transition={{ delay: 2.2, y: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
+        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.4em] text-primary/70 transition-colors hover:text-primary"
       >
         <div className="flex flex-col items-center gap-2">
           <span>Scroll</span>
           <div className="h-10 w-[1px] bg-gradient-to-b from-primary to-transparent" />
         </div>
-      </motion.div>
+      </motion.a>
     </section>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Story                                                               */
@@ -695,13 +773,15 @@ function Trailer() {
                   key="player"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  src="https://www.youtube.com/embed/G7YXBs61fnQ?autoplay=1&rel=0"
-                  title="Dexter trailer"
+                  src="https://www.youtube-nocookie.com/embed/Bw8ZdQpVtdU?autoplay=1&rel=0&modestbranding=1&playsinline=1"
+                  title="Dexter: Original Sin — Official Trailer"
                   className="absolute inset-0 h-full w-full"
-                  allow="autoplay; encrypted-media; picture-in-picture"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                   allowFullScreen
                 />
               )}
+
             </AnimatePresence>
             <div className="scanline" />
           </div>

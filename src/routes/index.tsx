@@ -699,13 +699,15 @@ function Trailer() {
                   key="player"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  src="https://www.youtube.com/embed/G7YXBs61fnQ?autoplay=1&rel=0"
-                  title="Dexter trailer"
+                  src="https://www.youtube-nocookie.com/embed/Bw8ZdQpVtdU?autoplay=1&rel=0&modestbranding=1&playsinline=1"
+                  title="Dexter: Original Sin — Official Trailer"
                   className="absolute inset-0 h-full w-full"
-                  allow="autoplay; encrypted-media; picture-in-picture"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                   allowFullScreen
                 />
               )}
+
             </AnimatePresence>
             <div className="scanline" />
           </div>

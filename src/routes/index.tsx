@@ -24,48 +24,56 @@ const CAST = [
     role: "Dexter Morgan",
     bio: "Miami Metro's mild-mannered blood-spatter analyst — and a serial killer bound by Harry's Code.",
     code: "SUBJECT-01",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Michael_C._Hall_2016.jpg/440px-Michael_C._Hall_2016.jpg",
   },
   {
     actor: "Jennifer Carpenter",
     role: "Debra Morgan",
     bio: "Fierce, foul-mouthed homicide detective. Dexter's sister — and his sharpest blind spot.",
     code: "DET-02",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Jennifer_Carpenter_2016.jpg/440px-Jennifer_Carpenter_2016.jpg",
   },
   {
     actor: "James Remar",
     role: "Harry Morgan",
     bio: "Dexter's adoptive father and the architect of the Code. A ghost that refuses to stay buried.",
     code: "MENTOR-03",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/James_Remar_2013.jpg/440px-James_Remar_2013.jpg",
   },
   {
     actor: "David Zayas",
     role: "Angel Batista",
     bio: "A warm, sincere homicide sergeant who sees the man Dexter pretends to be.",
     code: "SGT-04",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/David_Zayas_2016.jpg/440px-David_Zayas_2016.jpg",
   },
   {
     actor: "Julie Benz",
     role: "Rita Bennett",
     bio: "The bruised angel Dexter chose as camouflage — until the mask slipped.",
     code: "CIV-05",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Julie_Benz_2011.jpg/440px-Julie_Benz_2011.jpg",
   },
   {
     actor: "C. S. Lee",
     role: "Vince Masuka",
     bio: "Forensic specialist. Filthy jokes, keen eyes, and just enough obliviousness to keep Dexter safe.",
     code: "FOR-06",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/C_S_Lee_2016.jpg/440px-C_S_Lee_2016.jpg",
   },
   {
     actor: "Desmond Harrington",
     role: "Joey Quinn",
     bio: "A detective whose ambition circles Dexter's orbit like a shark scenting blood.",
     code: "DET-07",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Desmond_Harrington_2016.jpg/440px-Desmond_Harrington_2016.jpg",
   },
   {
     actor: "Luna Lauren Vélez",
     role: "María LaGuerta",
     bio: "The Lieutenant who tied all the loose ends — and paid the price for tying them too tight.",
     code: "LT-08",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Luna_Lauren_Velez_2016.jpg/440px-Luna_Lauren_Velez_2016.jpg",
   },
 ];
 
@@ -885,7 +893,7 @@ function Trailer() {
 /* Cast                                                                */
 /* ------------------------------------------------------------------ */
 
-function CastCard({ actor, role, bio, code, index }: (typeof CAST)[number] & { index: number }) {
+function CastCard({ actor, role, bio, code, image, index }: (typeof CAST)[number] & { index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const handleMove = (e: React.MouseEvent) => {
@@ -914,35 +922,15 @@ function CastCard({ actor, role, bio, code, index }: (typeof CAST)[number] & { i
       className="group glass-panel relative overflow-hidden border-white/5 transition-all duration-500 hover:border-primary/50 hover:crimson-glow"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-surface-low">
-        {/* stylized silhouette portrait built from gradients */}
-        <div
-          className="absolute inset-0 transition-all duration-1000 group-hover:scale-105"
-          style={{
-            background: `
-              radial-gradient(ellipse 60% 45% at 50% 35%, oklch(0.28 0.05 25) 0%, transparent 55%),
-              radial-gradient(ellipse 80% 60% at 50% 90%, oklch(0.42 0.19 27 / 0.5) 0%, transparent 60%),
-              linear-gradient(180deg, oklch(0.09 0.02 25) 0%, oklch(0.13 0.03 25) 100%)
-            `,
-          }}
+        {/* actual photo */}
+        <img
+          src={image}
+          alt={actor}
+          className="absolute inset-0 h-full w-full object-cover transition-all duration-1000 group-hover:scale-105"
         />
-        {/* neon rim silhouette */}
-        <svg viewBox="0 0 300 400" className="absolute inset-0 h-full w-full">
-          <defs>
-            <radialGradient id={`g${index}`} cx="0.5" cy="0.3" r="0.6">
-              <stop offset="0" stopColor="oklch(0.42 0.19 27)" stopOpacity="0.7" />
-              <stop offset="1" stopColor="oklch(0.42 0.19 27)" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <ellipse cx="150" cy="130" rx="55" ry="70" fill={`url(#g${index})`} />
-          <path
-            d="M 90 200 Q 80 260 70 400 L 230 400 Q 220 260 210 200 Q 190 175 150 175 Q 110 175 90 200 Z"
-            fill="oklch(0.11 0.02 25)"
-            stroke="oklch(0.42 0.19 27 / 0.4)"
-            strokeWidth="1"
-          />
-          <circle cx="150" cy="130" r="60" fill="none" stroke="oklch(0.42 0.19 27 / 0.6)" strokeWidth="0.5" />
-        </svg>
-
+        {/* dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        
         {/* forensic overlay */}
         <div className="absolute left-4 top-4 font-mono text-[9px] uppercase tracking-[0.2em] text-primary/80">
           {code}
@@ -951,7 +939,6 @@ function CastCard({ actor, role, bio, code, index }: (typeof CAST)[number] & { i
           #{String(index + 1).padStart(2, "0")}
         </div>
         <div className="scanline" />
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
       </div>
 
       <div className="relative p-6">

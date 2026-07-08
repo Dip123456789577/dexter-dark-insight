@@ -10,6 +10,15 @@ import gal2 from "@/assets/gallery-2.jpg";
 import gal3 from "@/assets/gallery-3.jpg";
 import gal4 from "@/assets/gallery-4.jpg";
 
+import photoMichael from "@/assets/michael-c-hall.png";
+import photoJennifer from "@/assets/jennifer-carpenter.png";
+import photoJames from "@/assets/james-remar.png";
+import photoDavid from "@/assets/david-zayas.png";
+import photoJulie from "@/assets/julie-benz.png";
+import photoCSLee from "@/assets/c-s-lee.png";
+import photoDesmond from "@/assets/desmond-harrington.png";
+import photoLuna from "@/assets/luna-lauren-velez.png";
+
 export const Route = createFileRoute("/")({
   component: DexterPage,
 });
@@ -24,56 +33,64 @@ const CAST = [
     role: "Dexter Morgan",
     bio: "Miami Metro's mild-mannered blood-spatter analyst — and a serial killer bound by Harry's Code.",
     code: "SUBJECT-01",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop",
+    image: photoMichael,
+    demoReel: "R6_qsTCBns8",
   },
   {
     actor: "Jennifer Carpenter",
     role: "Debra Morgan",
     bio: "Fierce, foul-mouthed homicide detective. Dexter's sister — and his sharpest blind spot.",
     code: "DET-02",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop",
+    image: photoJennifer,
+    demoReel: "QplvibD-Xjo",
   },
   {
     actor: "James Remar",
     role: "Harry Morgan",
     bio: "Dexter's adoptive father and the architect of the Code. A ghost that refuses to stay buried.",
     code: "MENTOR-03",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=500&fit=crop",
+    image: photoJames,
+    demoReel: "kY3L9S-h13s",
   },
   {
     actor: "David Zayas",
     role: "Angel Batista",
     bio: "A warm, sincere homicide sergeant who sees the man Dexter pretends to be.",
     code: "SGT-04",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=500&fit=crop",
+    image: photoDavid,
+    demoReel: "JmY0511Y8pE",
   },
   {
     actor: "Julie Benz",
     role: "Rita Bennett",
     bio: "The bruised angel Dexter chose as camouflage — until the mask slipped.",
     code: "CIV-05",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=500&fit=crop",
+    image: photoJulie,
+    demoReel: "kYJ_f-uH-F4",
   },
   {
     actor: "C. S. Lee",
     role: "Vince Masuka",
     bio: "Forensic specialist. Filthy jokes, keen eyes, and just enough obliviousness to keep Dexter safe.",
     code: "FOR-06",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=500&fit=crop",
+    image: photoCSLee,
+    demoReel: "tTUlSq24sM4",
   },
   {
     actor: "Desmond Harrington",
     role: "Joey Quinn",
     bio: "A detective whose ambition circles Dexter's orbit like a shark scenting blood.",
     code: "DET-07",
-    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=500&fit=crop",
+    image: photoDesmond,
+    demoReel: "R9K48s3lK7I",
   },
   {
     actor: "Luna Lauren Vélez",
     role: "María LaGuerta",
     bio: "The Lieutenant who tied all the loose ends — and paid the price for tying them too tight.",
     code: "LT-08",
-    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=500&fit=crop",
+    image: photoLuna,
+    demoReel: "icIeSIeBU_c",
   },
 ];
 
@@ -893,7 +910,7 @@ function Trailer() {
 /* Cast                                                                */
 /* ------------------------------------------------------------------ */
 
-function CastCard({ actor, role, bio, code, image, index }: (typeof CAST)[number] & { index: number }) {
+function CastCard({ actor, role, bio, code, image, index, demoReel, onPlayReel }: (typeof CAST)[number] & { index: number; onPlayReel?: (actor: string, videoId: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const handleMove = (e: React.MouseEvent) => {
@@ -939,6 +956,26 @@ function CastCard({ actor, role, bio, code, image, index }: (typeof CAST)[number
           #{String(index + 1).padStart(2, "0")}
         </div>
         <div className="scanline" />
+
+        {/* Hover Play Button Overlay */}
+        {demoReel && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onPlayReel?.(actor, demoReel);
+              }}
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-primary bg-background/90 text-primary transition-colors cursor-pointer hover:bg-primary hover:text-white crimson-glow"
+              title={`Play ${actor} Demo Reel`}
+            >
+              <svg width="16" height="18" viewBox="0 0 12 14" fill="currentColor" className="ml-0.5">
+                <polygon points="0,0 12,7 0,14" />
+              </svg>
+            </motion.button>
+          </div>
+        )}
       </div>
 
       <div className="relative p-6">
@@ -949,12 +986,34 @@ function CastCard({ actor, role, bio, code, image, index }: (typeof CAST)[number
         <p className="mt-3 text-sm leading-relaxed text-on-surface-variant opacity-70 transition-opacity duration-300 group-hover:opacity-100">
           {bio}
         </p>
+        {demoReel && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlayReel?.(actor, demoReel);
+            }}
+            className="mt-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-primary hover:text-white transition-all border border-primary/30 hover:border-primary/80 bg-primary/5 hover:bg-primary/20 px-3 py-1.5 rounded cursor-pointer group/btn"
+          >
+            <svg 
+              width="8" 
+              height="10" 
+              viewBox="0 0 12 14" 
+              fill="currentColor"
+              className="group-hover/btn:translate-x-[1px] transition-transform"
+            >
+              <polygon points="0,0 12,7 0,14" />
+            </svg>
+            Play Demo Reel
+          </button>
+        )}
       </div>
     </motion.div>
   );
 }
 
 function Cast() {
+  const [activeReel, setActiveReel] = useState<{ actor: string; videoId: string } | null>(null);
+
   return (
     <section id="cast" className="relative px-6 py-32 md:px-16">
       <div className="mx-auto max-w-7xl">
@@ -974,10 +1033,71 @@ function Cast() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {CAST.map((c, i) => (
-            <CastCard key={c.actor} {...c} index={i} />
+            <CastCard 
+              key={c.actor} 
+              {...c} 
+              index={i} 
+              onPlayReel={(actor, videoId) => setActiveReel({ actor, videoId })} 
+            />
           ))}
         </div>
       </div>
+
+      {/* Cinematic Demo Reel Modal */}
+      <AnimatePresence>
+        {activeReel && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-md"
+            onClick={() => setActiveReel(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="glass-panel relative w-full max-w-4xl overflow-hidden bg-background border-primary/30 p-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* modal header */}
+              <div className="flex items-center justify-between border-b border-outline-variant p-4 font-mono">
+                <div className="flex items-center gap-2 text-primary">
+                  <span className="h-2 w-2 bg-primary crimson-glow animate-pulse" />
+                  <span className="text-[10px] uppercase tracking-[0.25em]">Evidence Reel // {activeReel.actor}</span>
+                </div>
+                <button
+                  onClick={() => setActiveReel(null)}
+                  className="text-on-surface-variant hover:text-primary transition-colors text-xs uppercase tracking-widest cursor-pointer font-bold"
+                >
+                  [ Close ]
+                </button>
+              </div>
+
+              {/* video container */}
+              <div className="relative aspect-video w-full bg-black">
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${activeReel.videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
+                  title={`${activeReel.actor} Demo Reel`}
+                  className="absolute inset-0 h-full w-full border-0"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                  allowFullScreen
+                />
+                <div className="scanline pointer-events-none" />
+              </div>
+
+              {/* forensic case file footer */}
+              <div className="flex flex-wrap items-center justify-between gap-4 p-4 font-mono text-[9px] uppercase tracking-[0.25em] text-on-surface-variant/80 bg-surface-low/50">
+                <span>FILE REF: DEXTER-REEL-{activeReel.actor.replace(/\s+/g, "-").toUpperCase()}</span>
+                <span>SECURE HOST: YOUTUBE-NO-COOKIE</span>
+                <span>STATUS: CLASSIFIED EVIDENCE</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

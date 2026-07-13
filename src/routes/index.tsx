@@ -50,6 +50,7 @@ const CAST = [
     bio: "Dexter's adoptive father and the architect of the Code. A ghost that refuses to stay buried.",
     code: "MENTOR-03",
     image: photoJames,
+    demoReel: "JmY0511Y8pE",
   },
   {
     actor: "David Zayas",
@@ -57,7 +58,7 @@ const CAST = [
     bio: "A warm, sincere homicide sergeant who sees the man Dexter pretends to be.",
     code: "SGT-04",
     image: photoDavid,
-    demoReel: "JmY0511Y8pE",
+    demoReel: "kY3L9S-h13s",
   },
   {
     actor: "Julie Benz",
@@ -65,7 +66,7 @@ const CAST = [
     bio: "The bruised angel Dexter chose as camouflage — until the mask slipped.",
     code: "CIV-05",
     image: photoJulie,
-    demoReel: "kYJ_f-uH-F4",
+    demoReel: "R9K48s3lK7I",
   },
   {
     actor: "C. S. Lee",
@@ -81,7 +82,7 @@ const CAST = [
     bio: "A detective whose ambition circles Dexter's orbit like a shark scenting blood.",
     code: "DET-07",
     image: photoDesmond,
-    demoReel: "R9K48s3lK7I",
+    demoReel: "kYJ_f-uH-F4",
   },
   {
     actor: "Luna Lauren Vélez",

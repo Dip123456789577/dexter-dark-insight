@@ -50,7 +50,6 @@ const CAST = [
     bio: "Dexter's adoptive father and the architect of the Code. A ghost that refuses to stay buried.",
     code: "MENTOR-03",
     image: photoJames,
-    demoReel: "kY3L9S-h13s",
   },
   {
     actor: "David Zayas",
